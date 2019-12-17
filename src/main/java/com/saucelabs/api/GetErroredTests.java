@@ -1,3 +1,5 @@
+package com.saucelabs.api;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mashape.unirest.http.HttpResponse;
@@ -40,7 +42,7 @@ public class GetErroredTests
 			parameters.put("time_range", TIME_RANGE);
 			parameters.put("scope", SCOPE);
 			parameters.put("status", STATUS);
-			parameters.put("pretty", true);
+//			parameters.put("pretty", true);
 			parameters.put("size", size);
 			parameters.put("from", from);
 
@@ -84,10 +86,11 @@ public class GetErroredTests
 		System.out.println("internalServerErrors: " + internalServerErrors.size());
 		System.out.println("infrastructureErrors: " + infrastructureErrors.size());
 
-		// output results of all tests with a particular Error
-		infrastructureErrors.forEach(test-> {
-			System.out.println(test.asJson());
-		});
+
+//		// output results of all tests with a particular Error
+//		infrastructureErrors.forEach(test-> {
+//			System.out.println(test.asJson());
+//		});
 	}
 
 	public static List<TestResponse> filterByError(List<TestResponse> items, String errorMessage)
