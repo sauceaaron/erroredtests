@@ -9,6 +9,7 @@ import com.mashape.unirest.request.HttpRequest;
 import io.restassured.path.json.JsonPath;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,18 +24,37 @@ public class GetErroredTests
 	static String SCOPE = System.getProperty("SCOPE", "me"); // me, organization, single
 	static String STATUS = System.getProperty("STATUS", "errored"); // errored, complete, passed, failed
 
+	static String SHOW_TESTS = System.getProperty("SHOW_TESTS", "false"); // true, false
+	static String ERROR_MESSAGES = System.getProperty("ERROR_MESSAGES", "Internal Server Error,Infrastructure Error");
+
+
 	public static void main(String[] args) throws UnirestException
 	{
+
+		System.out.println("USERNAME: " + USERNAME);
+		System.out.println("ACCESS_KEY: " + ACCESS_KEY);
+		System.out.println("TIME_RANGE:" + TIME_RANGE);
+		System.out.println("SCOPE:" + SCOPE);
+		System.out.println("STATUS: " + STATUS);
+		System.out.println("SHOW_TESTS: " + SHOW_TESTS);
+		System.out.println("ERROR_MESSAGES: " + ERROR_MESSAGES);
+
+		boolean showTestDetails = Boolean.parseBoolean(SHOW_TESTS);
+		System.out.println(showTestDetails);
+
+		List<String> errorMessages = Arrays.asList(ERROR_MESSAGES.split(","));
+		System.out.println(errorMessages);
+
 		int from = 0; //starting test sequence
 		int size = 100;
 		int max = 10000;
-
 		boolean has_more;
 
 		List<TestResponse> allErrors = new ArrayList<>();
-		List<TestResponse> timeoutErrors = new ArrayList<>();
-		List<TestResponse> internalServerErrors = new ArrayList<>();
-		List<TestResponse> infrastructureErrors = new ArrayList<>();
+//		List<TestResponse> timeoutErrors = new ArrayList<>();
+//		List<TestResponse> internalServerErrors = new ArrayList<>();
+//		List<TestResponse> infrastructureErrors = new ArrayList<>();
+		HashMap<String, List<TestResponse>> errorBuckets = new HashMap<>();
 
 		do
 		{
@@ -46,16 +66,17 @@ public class GetErroredTests
 			parameters.put("size", size);
 			parameters.put("from", from);
 
+
 			HttpRequest request = Unirest.get(TESTS_ENDPOINT)
 					.queryString(parameters)
 					.basicAuth(USERNAME, ACCESS_KEY);
-			System.out.println("request URL: " + request.getUrl());
+//			System.out.println("request URL: " + request.getUrl());
 
 			HttpResponse<String> response = request.asString();
-			System.out.println("status: " + response.getStatus() + " " + response.getStatusText());
+//			System.out.println("status: " + response.getStatus() + " " + response.getStatusText());
 
 			String body = response.getBody();
-			System.out.println("body:" + body);
+//			System.out.println("body:" + body);
 
 			JsonPath jsonPath = JsonPath.from(body);
 			has_more = jsonPath.getBoolean(("has_more"));
@@ -64,27 +85,46 @@ public class GetErroredTests
 			// collect all errored tests
 			allErrors.addAll((items));
 
-			// filter and collect timeout errors
-			timeoutErrors.addAll(filterByError(items, "Test did not see a new command"));
+			errorMessages.forEach(errorMessage -> {
+				errorMessage = errorMessage.trim();
+				List<TestResponse> errors = new ArrayList<>();
+				errors.addAll(filterByError(items, errorMessage));
+				errorBuckets.put(errorMessage, errors);
+			});
 
-			// filter and collect internal server errors
-			internalServerErrors.addAll(filterByError(items, "Internal Server Error"));
-
-			// filter and collect infrastructure errors
-			infrastructureErrors.addAll(filterByError(items, "Infrastructure Error"));
+//			// filter and collect timeout errors
+//			timeoutErrors.addAll(filterByError(items, "Test did not see a new command"));
+//
+//			// filter and collect internal server errors
+//			internalServerErrors.addAll(filterByError(items, "Internal Server Error"));
+//
+//			// filter and collect infrastructure errors
+//			infrastructureErrors.addAll(filterByError(items, "Infrastructure Error"));
 
 			// get the next 100 tests until all are collected or max is achieved
 			from+= size;
 
-			System.out.println("has_more: " + has_more);
-			System.out.println("current set: " + items.size());
+//			System.out.println("has_more: " + has_more);
+//			System.out.println("current set: " + items.size());
 		}
 		while (has_more && from <= max);
 
+		if (showTestDetails == true)
+		{
+			allErrors.forEach(testResponse -> {
+				System.out.println(testResponse.asJson());
+			});
+		}
+
 		System.out.println("allErrors: " + allErrors.size());
-		System.out.println("timeoutErrors: " + timeoutErrors.size());
-		System.out.println("internalServerErrors: " + internalServerErrors.size());
-		System.out.println("infrastructureErrors: " + infrastructureErrors.size());
+//		System.out.println("timeoutErrors: " + timeoutErrors.size());
+//		System.out.println("internalServerErrors: " + internalServerErrors.size());
+//		System.out.println("infrastructureErrors: " + infrastructureErrors.size());
+
+		errorBuckets.forEach( (errorMessage, testResponses) -> {
+			System.out.println("error: " + errorMessage + ": " +  testResponses.size());
+		});
+
 
 
 //		// output results of all tests with a particular Error
