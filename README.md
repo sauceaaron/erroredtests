@@ -10,7 +10,7 @@ You can pass the following options as properties:
 
 * USERNAME (your Sauce Labs username) default will check for environment variable SAUCE_USERNAME)=
 * ACCESS_KEY (your Sauce Labs access key) default will check for environment variable SAUCE_ACCESS_KEY)
-* TIME_RANGE (-1d, -1h, -1m, -1s; maximum -29d) default is "-1d"
+* TIME_RANGE (-1d, -1h, -1m, -1s; maximum -29d) default is "1d"
 * SCOPE (me, organization, single) default is "me"
 * STATUS (errored, complete, passed, failed) default is "errored"
 * DISPLAY_TESTS (false, true) default is "false"
@@ -25,8 +25,9 @@ Probably what you want to do is something like this:
 ```
 mvn clean package
 cd target
+java -DTIME_RANGE=29d -DSCOPE=organization -DSTATUS=errored -DUSERNAME=myusername -DACCESS_KEY=myaccesskey -jar errored-tests-1.0-jar-with-dependencies.jar
+```
 
-java -DTIME_RANGE=-29d -DSCOPE=organization -DSTATUS=errored -DUSERNAME=myusername -DACCESS_KEY=myaccesskey -jar errored-tests-1.0-jar-with-dependencies.jar
-
-java -DERROR_MESSAGES="Test did not see a new command,Infrastructure Error,Internal Server Error" -DSHOW_TESTS=false -DTIME_RANGE=1h -DSCOPE=organization -jar errored-tests-1.0-jar-with-dependencies.jar
+```
+java -DERROR_MESSAGES="Infrastructure Error,Internal Server Error" -DSHOW_TESTS=true -DTIME_RANGE=1h -jar errored-tests-1.0-jar-with-dependencies.jar
 ```
