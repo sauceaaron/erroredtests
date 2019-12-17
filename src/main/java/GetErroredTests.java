@@ -1,5 +1,3 @@
-package com.saucelabs.examples;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mashape.unirest.http.HttpResponse;
