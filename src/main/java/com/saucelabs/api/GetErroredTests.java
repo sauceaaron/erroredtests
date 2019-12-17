@@ -23,14 +23,11 @@ public class GetErroredTests
 	static String TIME_RANGE = System.getProperty("TIME_RANGE", "-1d"); // -1d, -1h, -1m, -1s; maximum -29d
 	static String SCOPE = System.getProperty("SCOPE", "me"); // me, organization, single
 	static String STATUS = System.getProperty("STATUS", "errored"); // errored, complete, passed, failed
-
 	static String SHOW_TESTS = System.getProperty("SHOW_TESTS", "false"); // true, false
-	static String ERROR_MESSAGES = System.getProperty("ERROR_MESSAGES", "Internal Server Error,Infrastructure Error");
-
+	static String ERROR_MESSAGES = System.getProperty("ERROR_MESSAGES", "Test did not see a new command,Internal Server Error,Infrastructure Error");
 
 	public static void main(String[] args) throws UnirestException
 	{
-
 		System.out.println("USERNAME: " + USERNAME);
 		System.out.println("ACCESS_KEY: " + ACCESS_KEY);
 		System.out.println("TIME_RANGE:" + TIME_RANGE);
@@ -39,8 +36,8 @@ public class GetErroredTests
 		System.out.println("SHOW_TESTS: " + SHOW_TESTS);
 		System.out.println("ERROR_MESSAGES: " + ERROR_MESSAGES);
 
-		boolean showTestDetails = Boolean.parseBoolean(SHOW_TESTS);
-		System.out.println(showTestDetails);
+		boolean showTests = Boolean.parseBoolean(SHOW_TESTS);
+		System.out.println(showTests);
 
 		List<String> errorMessages = Arrays.asList(ERROR_MESSAGES.split(","));
 		System.out.println(errorMessages);
@@ -51,9 +48,6 @@ public class GetErroredTests
 		boolean has_more;
 
 		List<TestResponse> allErrors = new ArrayList<>();
-//		List<TestResponse> timeoutErrors = new ArrayList<>();
-//		List<TestResponse> internalServerErrors = new ArrayList<>();
-//		List<TestResponse> infrastructureErrors = new ArrayList<>();
 		HashMap<String, List<TestResponse>> errorBuckets = new HashMap<>();
 
 		do
@@ -66,17 +60,12 @@ public class GetErroredTests
 			parameters.put("size", size);
 			parameters.put("from", from);
 
-
 			HttpRequest request = Unirest.get(TESTS_ENDPOINT)
 					.queryString(parameters)
 					.basicAuth(USERNAME, ACCESS_KEY);
-//			System.out.println("request URL: " + request.getUrl());
 
 			HttpResponse<String> response = request.asString();
-//			System.out.println("status: " + response.getStatus() + " " + response.getStatusText());
-
 			String body = response.getBody();
-//			System.out.println("body:" + body);
 
 			JsonPath jsonPath = JsonPath.from(body);
 			has_more = jsonPath.getBoolean(("has_more"));
@@ -85,31 +74,30 @@ public class GetErroredTests
 			// collect all errored tests
 			allErrors.addAll((items));
 
+			// filter them all into separate buckets based on error message
 			errorMessages.forEach(errorMessage -> {
 				errorMessage = errorMessage.trim();
 				List<TestResponse> errors = new ArrayList<>();
+
+				// get new errors
 				errors.addAll(filterByError(items, errorMessage));
+
+				// add any existing errors (fix for https://github.com/sauceaaron/erroredtests/issues/2)
+				if (errorBuckets.containsKey(errorMessage))
+				{
+					errors.addAll(errorBuckets.get(errorMessage));
+				}
+
+				// put them all back in the bucket -- NOTE: this is an inefficient copy
 				errorBuckets.put(errorMessage, errors);
 			});
 
-//			// filter and collect timeout errors
-//			timeoutErrors.addAll(filterByError(items, "Test did not see a new command"));
-//
-//			// filter and collect internal server errors
-//			internalServerErrors.addAll(filterByError(items, "Internal Server Error"));
-//
-//			// filter and collect infrastructure errors
-//			infrastructureErrors.addAll(filterByError(items, "Infrastructure Error"));
-
 			// get the next 100 tests until all are collected or max is achieved
 			from+= size;
-
-//			System.out.println("has_more: " + has_more);
-//			System.out.println("current set: " + items.size());
 		}
 		while (has_more && from <= max);
 
-		if (showTestDetails == true)
+		if (showTests == true)
 		{
 			allErrors.forEach(testResponse -> {
 				System.out.println(testResponse.asJson());
@@ -117,20 +105,10 @@ public class GetErroredTests
 		}
 
 		System.out.println("allErrors: " + allErrors.size());
-//		System.out.println("timeoutErrors: " + timeoutErrors.size());
-//		System.out.println("internalServerErrors: " + internalServerErrors.size());
-//		System.out.println("infrastructureErrors: " + infrastructureErrors.size());
 
 		errorBuckets.forEach( (errorMessage, testResponses) -> {
 			System.out.println("error: " + errorMessage + ": " +  testResponses.size());
 		});
-
-
-
-//		// output results of all tests with a particular Error
-//		infrastructureErrors.forEach(test-> {
-//			System.out.println(test.asJson());
-//		});
 	}
 
 	public static List<TestResponse> filterByError(List<TestResponse> items, String errorMessage)

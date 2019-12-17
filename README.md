@@ -26,7 +26,7 @@ Probably what you want to do is something like this:
 mvn clean package
 cd target
 
-java -DTIME_RANGE=-29 -DSCOPE=organization -DSTATUS=errored -DUSERNAME=myusername -DACCESS_KEY=myaccesskey -jar errored-tests-1.0-jar-with-dependencies.jar
+java -DTIME_RANGE=-29d -DSCOPE=organization -DSTATUS=errored -DUSERNAME=myusername -DACCESS_KEY=myaccesskey -jar errored-tests-1.0-jar-with-dependencies.jar
 
 java -DERROR_MESSAGES="Test did not see a new command,Infrastructure Error,Internal Server Error" -DSHOW_TESTS=false -DTIME_RANGE=1h -DSCOPE=organization -jar errored-tests-1.0-jar-with-dependencies.jar
 ```
