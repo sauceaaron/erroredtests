@@ -26,5 +26,5 @@ Probably what you want to do is something like this:
 ```
 mvn clean package
 cd target
-java -jar errored-tests-1.0.jar -DTIME_RANGE=-29 -DSCOPE=organization -DSTATUS=errored -DUSERNAME=myusername -DACCESS_KEY=myaccesskey
+java -jar errored-tests-1.0-jar-with-dependencies.jar -DTIME_RANGE=-29 -DSCOPE=organization -DSTATUS=errored -DUSERNAME=myusername -DACCESS_KEY=myaccesskey
 ```
