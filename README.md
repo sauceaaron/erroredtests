@@ -12,19 +12,21 @@ You can pass the following options as properties:
 * ACCESS_KEY (your Sauce Labs access key) default will check for environment variable SAUCE_ACCESS_KEY)
 * TIME_RANGE (-1d, -1h, -1m, -1s; maximum -29d) default is "-1d"
 * SCOPE (me, organization, single) default is "me"
-* STATUS (errored, complete, passed, failed) defailt is "errored"
-
-It checks for the following error strings:
+* STATUS (errored, complete, passed, failed) default is "errored"
+* DISPLAY_TESTS (false, true) default is "false"
+* ERROR_MESSAGES default is "Test did not see a new command,Internal Server Error,Infrastructure Error"
+Dy default, It checks for the following error strings:
 
 * "Test did not see a new command"
 * "Internal Server Error"
 * "Infrastructure Error"
 
-You can add or modify errors by editing the source code.
-
 Probably what you want to do is something like this:
 ```
 mvn clean package
 cd target
-java -jar errored-tests-1.0-jar-with-dependencies.jar -DTIME_RANGE=-29 -DSCOPE=organization -DSTATUS=errored -DUSERNAME=myusername -DACCESS_KEY=myaccesskey
+
+java -DTIME_RANGE=-29 -DSCOPE=organization -DSTATUS=errored -DUSERNAME=myusername -DACCESS_KEY=myaccesskey -jar errored-tests-1.0-jar-with-dependencies.jar
+
+java -DERROR_MESSAGES="Test did not see a new command,Infrastructure Error,Internal Server Error" -DSHOW_TESTS=true -DTIME_RANGE=-1h -DSCOPE=organization -jar target/errored-tests-1.0-jar-with-dependencies.jar
 ```
