@@ -8,8 +8,8 @@ To just execute from source, type `mvn exec:java -Dexec.mainClass="com.saucelabs
 
 You can pass the following options as properties:
 
-* USERNAME (your Sauce Labs username) default will check for environment variable SAUCE_USERNAME)=
-* ACCESS_KEY (your Sauce Labs access key) default will check for environment variable SAUCE_ACCESS_KEY)
+* USERNAME (your Sauce Labs username) default will check for environment variable SAUCE_USERNAME
+* ACCESS_KEY (your Sauce Labs access key) default will check for environment variable SAUCE_ACCESS_KEY
 * TIME_RANGE (-1d, -1h, -1m, -1s; maximum -29d) default is "1d"
 * SCOPE (me, organization, single) default is "me"
 * STATUS (errored, complete, passed, failed) default is "errored"
