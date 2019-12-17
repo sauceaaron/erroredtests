@@ -15,7 +15,8 @@ You can pass the following options as properties:
 * STATUS (errored, complete, passed, failed) default is "errored"
 * DISPLAY_TESTS (false, true) default is "false"
 * ERROR_MESSAGES default is "Test did not see a new command,Internal Server Error,Infrastructure Error"
-Dy default, It checks for the following error strings:
+
+By default, It checks for the following error strings:
 
 * "Test did not see a new command"
 * "Internal Server Error"
